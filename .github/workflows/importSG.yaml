@@ -1,0 +1,10 @@
+- name: Check and Import Existing Security Groups
+  run: |
+    existing_control_sg=$(aws ec2 describe-security-groups --filters Name=group-name,Values=gha-tf-ans-demo-control --query "SecurityGroups[0].GroupId" --output text)
+    if [ "$existing_control_sg" != "None" ]; then
+      terraform import aws_security_group.gha-tf-ans-demo-control $existing_control_sg
+    fi
+    existing_target_sg=$(aws ec2 describe-security-groups --filters Name=group-name,Values=gha-tf-ans-demo-targets --query "SecurityGroups[0].GroupId" --output text)
+    if [ "$existing_target_sg" != "None" ]; then
+      terraform import aws_security_group.gha-tf-ans-demo-targets $existing_target_sg
+    fi
