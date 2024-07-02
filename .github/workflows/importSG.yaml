@@ -1,4 +1,4 @@
-- name: Check and Import Existing Security Groups
+name: Check and Import Existing Security Groups
   run: |
     existing_control_sg=$(aws ec2 describe-security-groups --filters Name=group-name,Values=gha-tf-ans-demo-control --query "SecurityGroups[0].GroupId" --output text)
     if [ "$existing_control_sg" != "None" ]; then
