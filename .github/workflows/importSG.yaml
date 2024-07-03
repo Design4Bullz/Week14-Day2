@@ -1,24 +1,51 @@
-name: test
+name: Import SG
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  build:
-
+  terraform:
+    name: Import SG
     runs-on: ubuntu-latest
+
     steps:
-      - name: checkout repo
+      - name: Checkout code
         uses: actions/checkout@v2
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.0.0
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
 
       - name: Check and Import Existing Security Groups
         run: |
-          existing_control_sg=$(aws ec2 describe-security-groups --filters Name=group-	name,Values=gha-tf-ans-demo-control --query "SecurityGroups[0].GroupId" --output 	text)
+          existing_control_sg=$(aws ec2 describe-security-groups --filters Name=group-name,Values=gha-tf-ans-demo-control --query "SecurityGroups[0].GroupId" --output text)
           if [ "$existing_control_sg" != "None" ]; then
-          terraform import aws_security_group.gha-tf-ans-demo-control $existing_control_sg
+            terraform import aws_security_group.gha-tf-ans-demo-control $existing_control_sg
           fi
-          existing_target_sg=$(aws ec2 describe-security-groups --filters Name=group-	name,Values=gha-tf-ans-demo-targets --query "SecurityGroups[0].GroupId" --output 	text)
+          existing_target_sg=$(aws ec2 describe-security-groups --filters Name=group-name,Values=gha-tf-ans-demo-targets --query "SecurityGroups[0].GroupId" --output text)
           if [ "$existing_target_sg" != "None" ]; then
-          terraform import aws_security_group.gha-tf-ans-demo-targets $existing_target_sg
+            terraform import aws_security_group.gha-tf-ans-demo-targets $existing_target_sg
           fi
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Plan
+        run: terraform plan
+
+      - name: Terraform Apply
+        if: github.event_name == 'push'
+        run: terraform apply -auto-approve

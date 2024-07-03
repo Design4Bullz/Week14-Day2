@@ -1,4 +1,29 @@
 name: Terraform Apply
-id: apply
-run: terraform apply --auto-approve -var "ssh_private_key_path=~/.ssh/id_rsa"
-continue-on-error: true
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.0.0
+
+      - name: Initialize Terraform
+        run: terraform init
+
+      - name: Apply Terraform
+        id: apply
+        run: terraform apply --auto-approve -var "ssh_private_key_path=~/.ssh/id_rsa"
+        continue-on-error: true
