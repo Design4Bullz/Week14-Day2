@@ -35,7 +35,6 @@ resource "aws_security_group" "gha-tf-ans-demo-control" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-
 }
 
 resource "aws_security_group" "gha-tf-ans-demo-targets" {
